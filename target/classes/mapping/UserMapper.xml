@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cwf.mapper.UserMapper">
+
+    <resultMap type="org.cwf.model.User" id="UserResultMap">
+        <result property="id" column="USER_ID"/>
+        <result property="username" column="USER_USERNAME"/>
+        <result property="password" column="USER_PASSWORD"/>
+        <result property="integral" column="USER_INTEGRAL"/>
+        <result property="education" column="USER_EDUCATION"/>
+        <result property="sex" column="USER_SEX"/>
+        <result property="profession" column="USER_PROFESSION"/>
+        <result property="phone" column="USER_PHONE"/>
+        <result property="email" column="USER_EMAIL"/>
+        <result property="state" column="USER_STATE"/>
+        <result property="name" column="USER_NAME"/>
+        <result property="upload" column="USER_UPLOAD"/>
+        <result property="download" column="USER_DOWNLOAD"/>
+        <result property="ctime" column="USER_CTIME"/>
+    </resultMap>
+	
+	<!-- 查询 -->
+	<select id="getUserData" parameterType="org.cwf.model.JsonUser" resultMap="UserResultMap">
+		SELECT USER_ID,USER_USERNAME,USER_PASSWORD,USER_INTEGRAL,D.DICT_VALUE AS USER_EDUCATION,DI.DICT_VALUE AS USER_SEX,DT.DICT_VALUE AS USER_PROFESSION,USER_PHONE,USER_EMAIL,DC.DICT_VALUE AS USER_STATE,USER_CTIME FROM DOC_USER US
+		INNER JOIN DOC_DICT DI ON DI.DICT_CODE = US.USER_SEX AND DI.DICT_TYPE = 'SEX'
+		INNER JOIN DOC_DICT D ON D.DICT_CODE = US.USER_EDUCATION AND D.DICT_TYPE = 'EDUCATION'
+		INNER JOIN DOC_DICT DT ON DT.DICT_CODE = US.USER_PROFESSION AND DT.DICT_TYPE = 'PROFESSION'
+		INNER JOIN DOC_DICT DC ON DC.DICT_CODE = US.USER_STATE AND DC.DICT_TYPE = 'USER'
+		<where>
+			1=1
+			<if test="name!=null and name!=''">
+				AND USER_USERNAME LIKE '%${name}%'
+			</if>
+		</where>
+		ORDER BY USER_CTIME DESC
+	</select>
+		
+	<!-- 禁用 -->
+	<update id="updateUserBearByPrimaryKey" parameterType="int">
+		UPDATE DOC_USER SET USER_STATE = 1
+		<where>
+			USER_ID = #{id}
+		</where>
+	</update>
+	
+	<!-- 启用 -->
+	<update id="updateUserStartByPrimaryKey" parameterType="int">
+		UPDATE DOC_USER SET USER_STATE = 0
+		<where>
+			USER_ID = #{id}
+		</where>
+	</update>
+	
+</mapper>

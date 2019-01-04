@@ -1,0 +1,14 @@
+.layui-form{
+	padding: 10px 20px;
+}
+.form-text{
+	font-size: 16px;
+	height: 30px;
+}
+.layui-form table{
+	font-size: 14px;
+	letter-spacing:0.5px;
+}
+.layui-form table td{
+	padding: 10px 30px 0 0;
+}

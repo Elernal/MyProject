@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="3rd/layui/css/layui.css" media="all">
+<link rel="stylesheet" href="3rd/layer/mobile/need/layer.css"  media="all">
+<link rel="stylesheet" href="3rd/layer/theme/default/layer.css"  media="all">
+</head>
+<body>
+<div align="center" style="padding:15px;" >
+		<form class="layui-form layui-form-pane" action="">
+			<div class="text-head">
+				<div class="layui-form-item">
+					<label class="layui-form-label">用户名</label>
+					<div class="layui-input-inline">
+						<input type="text" id="queryuser" class="layui-input">
+					</div>
+					<label class="layui-form-label">状态</label>
+					<div class="layui-input-inline">
+						<select id="querystate" name="quiz1">
+							<option value="">请选择</option>
+							<option value="0">启用</option>
+							<option value="1">禁用</option>
+						</select>
+					</div>
+					<input type="button" class="layui-btn" style="float: left;" value="查询" onclick="querry()" />
+					</div>
+				</div>
+				<div class="layui-form">
+					<table id="table" border="1" class="layui-table">
+						<colgroup>
+							<col width="150">
+							<col width="150">
+							<col width="200">
+							<col>
+						</colgroup>
+						<thead>
+							<tr>
+								<th>用户名</th>
+								<th>注册时间</th>
+								<th>积分</th>
+								<th>上传文档数</th>
+								<th>下载文档数</th>
+								<th>用户状态</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="tbody">
+							
+						</tbody>
+					</table>
+				</div>
+					<div id="test1"></div>
+		</form>
+	</div>
+
+</body>
+</html>
+<script src="3rd/layui/layui.all.js" charset="utf-8"></script>
+<script type="text/javascript" src="3rd/jquery-3.3.1.js"></script>
+<script src="3rd/layer/layer.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+	var queryuser = "";
+	var querystate = "";
+	
+	refresh(1,5);
+	function refresh(page,pageSize) {
+			$.ajax({
+					url : "showUserData",
+					type : "get",
+					dataType : "json",
+					data : {
+						"page" : page,
+						"limit" : pageSize,
+						"name" : queryuser
+					},
+
+					success : function(dataResp) {
+						console.log(dataResp);
+						var list = dataResp.pageList.list;
+						$("#tbody").find(".item").remove();
+
+						for (var i = 0; i < list.length; i++) {
+							$("#tbody").append("<tr class='item'></tr>");
+							var $tr = $("#tbody").find(".item").last();
+							var p = list[i];
+							$tr.append("<td>" + p.username + "</td>");
+							$tr.append("<td>" + p.ctime + "</td>");
+							$tr.append("<td>" + p.integral + "</td>");
+							$tr.append("<td>" + p.upload + "</td>");
+							$tr.append("<td>" + p.download + "</td>");
+							$tr.append("<td>" + p.state + "</td>");
+							if(p.state == "禁用"){
+								$tr.append("<td><a href='javascript:;' onclick='enable(" + p.id + ")'>启用</a></td>");
+							}else{
+								$tr.append("<td><a href='javascript:;' onclick='disable(" + p.id + ")'>禁用</a></td>");
+							}
+						}
+						setPage(dataResp);
+					},
+					error : function() {
+						layer.msg("分页请求失败");
+					}
+				}); 
+	}
+	
+	 function setPage(dataResp){
+		  layui.use('laypage', function(){
+			 layui.laypage.render({
+		            elem: 'test1',//元素ID 不要加# 并且只能是ID
+		            count: dataResp.pageList.total,//这个是你的总页数
+		            curr: dataResp.page,//这个是你当前的页数，设置好 页面跳转后他会自动选择对应的页码、也就是第几页的背景改变颜色
+		            limit : dataResp.limit,//这个是每页面显示多少条，页面跳转后他会自动让下拉框里对应的值设为选中状态
+		            limits: [5, 10, 15, 20, 25], //这个是下拉框里显示的option
+		            layout: ['prev', 'page','limit','next'],
+		            jump: function(obj, first){//这个方法是在你选择页数后触发执行，在这里完成当你点击页码后需要向服务请求数据的操作
+		                 if(first){ return ; }//如果是第一次不执行
+		                 refresh(obj.curr,obj.limit);
+		            }
+		        });
+		  });
+	}
+
+	function querry() {
+		queryuser = $("#queryuser").val();
+		refresh(1,5);
+	}
+
+	function enable(id) {
+		layer.confirm('确定要启用此用户吗？', {
+			  btn: ['确定','取消'] //按钮
+			}, function(){
+				$.ajax({
+					url : "startUser",
+					type : "POST",
+					dataType : "text",
+					data : {
+						id : id,
+					},
+
+					success : function(dataResp) {
+						layer.msg('启用成功');
+						refresh(1,5);
+					},
+					error : function() {
+						layer.msg('启用失败');
+					}
+				});
+			});
+	}
+
+	function disable(id) {
+		layer.confirm('确定要禁用此用户吗？', {
+			  btn: ['确定','取消'] //按钮
+			}, function(){
+				$.ajax({
+					url : "bearUser",
+					type : "POST",
+					dataType : "text",
+					data : {
+						id : id
+					},
+					success : function(dataResp) {
+						layer.msg('禁用成功');
+						refresh(1,5);
+					},
+					error : function() {
+						layer.msg('禁用失败');
+					}
+				});
+			});
+		
+	}
+	
+
+</script>
